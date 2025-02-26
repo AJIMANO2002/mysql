@@ -1,0 +1,80 @@
+create database ecommerce;
+use ecommerce;
+
+create table customers(
+ id int AUTO_INCREMENT PRIMARY KEY,
+ name varchar(255) not null,
+ email varchar(255) unique not null,
+ address text
+);
+
+
+create table products(
+id int AUTO_INCREMENT PRIMARY KEY,
+name varchar(255) not null,
+price decimal(10,2) not null,
+description text
+);
+
+create table orders(
+id int AUTO_INCREMENT PRIMARY KEY,
+customer_id int,
+order_date date,
+total_amount decimal(10,2),
+foreign key(customer_id) references customers(id)
+);
+
+insert into customers (name,email,address) values
+('aji','aji@gmail.com','123 main st'),
+('mano','mano@gmail.com','456 main st');
+
+
+insert into products (name,price,description) values
+('product a',20.00,'description of product a'),
+('product b',30.00,'description of product b'),
+('product c',40.00,'description of product c');
+
+insert into orders (customer_id,order_date,total_amount) values
+(1,curdate(),100.00),
+(2,curdate() - interval 20 day,150.00);
+
+select distinct c.* from customers c
+join orders o on c.id = o.customer_id
+where o.order_date >= curdate() - interval 30 day;
+
+select c.name, sum(o.total_amount) as total_spent
+from customers c
+join orders o on c.id = o.customer_id
+group by c.id;
+
+update products set price = 50.00 where name = 'product c';
+
+alter table products add column discount decimal(5,2) default 0.00;
+
+select * from products order by price desc limit 3;
+
+select distinct c.name from customers c 
+join orders o on c.id = o.customer_id
+join order_items oi on o.id = oi .order_id
+join products p on oi.product_id = p.id
+where p.name ='product a';
+
+select c.name, o.order_date from customers c
+join orders o on c.id = o.customer_id;
+
+select * from orders where total_amount > 150.00;
+
+create table order_items(
+id int AUTO_INCREMENT PRIMARY KEY,
+order_id int,
+product_id int,
+quantity int default 1,
+price decimal(10,2),
+foreign key (order_id) references orders(id),
+foreign key (product_id) references products(id)
+);
+
+alter table orders drop column total_amount;
+
+select avg(total_amount) as average_order_total from orders;
+
