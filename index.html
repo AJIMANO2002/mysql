@@ -1,5 +1,12 @@
+-- Create the ecommerce database
+
 create database ecommerce;
 use ecommerce;
+
+
+
+
+-- Create the customers table
 
 create table customers(
  id int AUTO_INCREMENT PRIMARY KEY,
@@ -9,12 +16,20 @@ create table customers(
 );
 
 
+
+
+-- Create the products table
+
 create table products(
 id int AUTO_INCREMENT PRIMARY KEY,
 name varchar(255) not null,
 price decimal(10,2) not null,
 description text
 );
+
+
+
+-- Create the orders table
 
 create table orders(
 id int AUTO_INCREMENT PRIMARY KEY,
@@ -24,34 +39,82 @@ total_amount decimal(10,2),
 foreign key(customer_id) references customers(id)
 );
 
+
+
+
+-- Insert sample data into customers
+
 insert into customers (name,email,address) values
 ('aji','aji@gmail.com','123 main st'),
 ('mano','mano@gmail.com','456 main st');
 
+
+
+
+-- Insert sample data into products
 
 insert into products (name,price,description) values
 ('product a',20.00,'description of product a'),
 ('product b',30.00,'description of product b'),
 ('product c',40.00,'description of product c');
 
+
+
+-- Insert sample data into orders
+
 insert into orders (customer_id,order_date,total_amount) values
 (1,curdate(),100.00),
 (2,curdate() - interval 20 day,150.00);
 
+
+
+-- Query 1: Retrieve all customers who have placed an order in the last 30 days
+-- This query selects distinct customers who have placed at least one order in the last 30 days.
+
+
 select distinct c.* from customers c
 join orders o on c.id = o.customer_id
 where o.order_date >= curdate() - interval 30 day;
+
+
+
+-- Query 2: Get the total amount of all orders placed by each customer
+-- This query calculates the total spending for each customer by summing up their order amounts.
 
 select c.name, sum(o.total_amount) as total_spent
 from customers c
 join orders o on c.id = o.customer_id
 group by c.id;
 
+
+
+
+-- Query 3: Update the price of Product C to 45.00
+-- This query updates the price of 'Product C' to 45.00 in the products table.
+
+
 update products set price = 50.00 where name = 'product c';
+
+
+
+
+-- Query 4: Add a new column discount to the products table
+-- This query adds a new column 'discount' to store discount information for products.
+
 
 alter table products add column discount decimal(5,2) default 0.00;
 
+
+
+-- Query 5: Retrieve the top 3 products with the highest price
+-- This query fetches the top 3 most expensive products based on price.
+
 select * from products order by price desc limit 3;
+
+
+
+-- Query 6: Get the names of customers who have ordered Product A
+-- This query finds all customers who have ordered 'Product A' by joining relevant tables.
 
 select distinct c.name from customers c 
 join orders o on c.id = o.customer_id
@@ -59,10 +122,29 @@ join order_items oi on o.id = oi .order_id
 join products p on oi.product_id = p.id
 where p.name ='product a';
 
+
+
+
+-- Query 7: Join orders and customers to retrieve the customer's name and order date
+-- This query retrieves customer names along with the dates they placed orders.
+
 select c.name, o.order_date from customers c
 join orders o on c.id = o.customer_id;
 
+
+
+
+-- Query 8: Retrieve orders with a total amount greater than 150.00
+-- This query selects all orders where the total amount exceeds 150.00.
+
 select * from orders where total_amount > 150.00;
+
+
+
+
+
+-- Normalization: Create an order_items table and update orders to reference it
+-- This step normalizes the database by creating an 'order_items' table for handling multiple products in an order.
 
 create table order_items(
 id int AUTO_INCREMENT PRIMARY KEY,
@@ -75,6 +157,10 @@ foreign key (product_id) references products(id)
 );
 
 alter table orders drop column total_amount;
+
+
+-- Query 10: Retrieve the average total of all orders
+-- This query calculates the average total amount of all orders placed in the system.
 
 select avg(total_amount) as average_order_total from orders;
 
